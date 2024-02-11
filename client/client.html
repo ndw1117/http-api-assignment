@@ -6,6 +6,57 @@
   
   <script>
 
+    const handleResponse = async (response) => {
+      
+      responseText = await response.text();
+      console.log(responseText);  // print the raw JSON or XML text strings to the console.
+      
+      const contentType = response.headers.get('Content-Type');
+      const content = document.getElementById('content');
+      content.innerHTML = '';
+
+      // Display the information on the web page
+      const h1 = document.createElement('h1');  // Code
+      const h3 = document.createElement('h3');  // Message
+
+      h1.innerText = response.headers.get('Status-Message');
+
+      if (contentType === 'text/xml') {
+        let parsedXML = new window.DOMParser().parseFromString(responseText, 'text/xml'); // This returns an xml document we can get elements from
+        h3.innerText = "Message: " + parsedXML.querySelector('message').textContent;
+      }
+      else if (contentType === 'application/json') {
+        let parsedData = JSON.parse(responseText);
+        h3.innerText = "Message: " + parsedData.message;
+      }
+
+      content.appendChild(h1);
+      content.appendChild(h3);
+    };
+
+    const sendFetchRequest = async (url, acceptedType) => {
+      const response = await fetch(url, {
+        method: 'GET', 
+        headers: {
+          'Accept': acceptedType,
+        }
+      });
+
+      handleResponse(response);
+    };
+
+    const init = () => {
+      const sendButton = document.getElementById('send');
+      const page = document.querySelector('#page');
+      const type = document.querySelector('#type'); 
+
+      sendButton.addEventListener('click', () => {
+        sendFetchRequest(page.value, type.value);
+      });
+    };
+
+    window.onload = init;
+
   </script>
 </head>
 <body>
